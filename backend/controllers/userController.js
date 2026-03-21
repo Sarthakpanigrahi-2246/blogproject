@@ -96,7 +96,6 @@ async function login(req, res) {
         message: "User Not Found",
       });
     }
-
     // ye tumhara password jo tum login ke samay enter karoge usse ye existing user ke password se compare karega IF SAME SUCCESSSFUL LOGIN else INCORRRECT PASSWORD
     const checkpassword = await bcrypt.compare(
       password,
@@ -108,13 +107,10 @@ async function login(req, res) {
         message:"incorrect Password"
       })
     }
-    
     let token = await generateJWT({
       email : checkForexistingUser.email,
       id : checkForexistingUser._id
     });
-
-
     return res.status(200).json({
       success: true,
       message: "Login Successfully",
@@ -132,7 +128,6 @@ async function login(req, res) {
 async function getAllUser(req, res) {
   try {
     const users = await User.find({}); //ye tumhare ALL user show karne ke kaam aaraha hai
-
     return res.status(200).json({
       success: true,
       message: "fetched successful from DB",
@@ -141,7 +136,7 @@ async function getAllUser(req, res) {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "USER NOt FOUND",
+      message: "USER NOT FOUND",
     });
   }
 }
