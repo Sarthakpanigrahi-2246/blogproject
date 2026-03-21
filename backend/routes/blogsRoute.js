@@ -1,25 +1,47 @@
 const express = require("express");
 const route = express.Router();
+const multer = require("multer")
 
-const { createBlog, getBlogs, getBlogbyID, patchBlog, deleteBlog }= require("../controllers/blogController");
+const {
+  createBlog,
+  getBlogs,
+  getBlogbyID,
+  patchBlog,
+  deleteBlog,
+  likeblog,
+} = require("../controllers/blogController");
+
 const verifyuser = require("../middleware/auth");
 
+const {
+  addcomment,
+  deletecomment,
+  editcomment,
+  likecomment,
+} = require("../controllers/commentController");
 
-route.post("/blogs",verifyuser,createBlog);
+const upload = require("../utils/multer");
+
+route.post("/blogs", verifyuser, upload.single("image"), createBlog); // upload.single("image")=> this is a middleware ////Ye request me aayi file ko handle karta hai
 
 route.get("/blogs", getBlogs);
 
-route.get("/blogs/:id",getBlogbyID);
+route.get("/blogs/:id", getBlogbyID);
 
-route.patch("/blogs/:id",patchBlog);
+route.patch("/blogs/:id", verifyuser, patchBlog);
 
-route.delete("/blogs/:id", deleteBlog);
+route.delete("/blogs/:id", verifyuser, deleteBlog);
+
+route.post("/blogs/like/:id", verifyuser, likeblog);
+
+route.post("/blogs/comment/:id", verifyuser, addcomment);
+route.delete("/blogs/comment/:id", verifyuser, deletecomment);
+route.patch("/blogs/editcomment/:id", verifyuser, editcomment);
+route.patch("/blogs/likecomment/:id", verifyuser, likecomment);
 
 module.exports = route;
 
-
-
-  // const blogs = [];
+// const blogs = [];
 // route.get("/blogs", (req, res) => {
 //   //   let publicBlogs = blogs.filter((blog) => blog.draft === false);
 //   let publicBlogs = blogs.filter((blog) => !blog.draft);

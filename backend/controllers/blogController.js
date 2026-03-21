@@ -1,21 +1,23 @@
 const Blog = require("../models/blogSchema");
 const User = require("../models/userSchema"); //Because we need the User model to interact with the users collection.
+const Comment = require("../models/commentSchema");
 const { verifyJWT } = require("../utils/generateToken");
 
 async function createBlog(req, res) {
-
-  const creator = req.user;
   try {
-    console.log("Creator ID from middleware:", creator);
-    
+     const creator = req.user;
+    // console.log("Creator ID from middleware/ Names:", creator);
+
     const { title, description, draft } = req.body; //// DESTRUCTURING
+    console.log( title, description, draft)
+    const image = req.file;
     if (!title) {
       return res.status(400).json({ message: "Please provide title" });
     }
     if (!description) {
       return res.status(400).json({ message: "Please provide description" });
     }
-    
+
     const findUser = await User.findById(creator); //in blogschema we used increator  creator:==type : mongoose.Schema.Types.ObjectId,
     //so creator give a ID like ("567899876544578gkuyfdcvbn")
 
@@ -28,6 +30,7 @@ async function createBlog(req, res) {
       description,
       draft,
       creator,
+      image
     });
     await User.findByIdAndUpdate(creator, {
       $push: { blogs: creatingBlog._id },
@@ -50,11 +53,16 @@ async function getBlogs(req, res) {
   try {
     // const blogs = await Blog.find({draft: false}).populate("creator");
 
-    const blogs = await Blog.find({ draft: false }).populate({
-      path: "creator",
-      //  select:"-password", //ye show karega creator ke name aur email ko but password ko hide karega
-      select: "name email -_id", //ye show karega creator ke name aur email ko but password ko hide karega aur _id bhi hide karega
-    });
+    const blogs = await Blog.find({ draft: false })
+      .populate({
+        path: "creator",
+        //  select:"-password", //ye show karega creator ke name aur email ko but password ko hide karega
+        select: "name email -_id", //ye show karega creator ke name aur email ko but password ko hide karega aur _id bhi hide karega
+      })
+      .populate({
+        path: "likes",
+        select: "email name",
+      });
     return res.status(200).json({
       //   success: true,
       message: "fetched BLOGS successful from DB",
@@ -73,17 +81,29 @@ async function getBlogbyID(req, res) {
   // const blogs = await Blog.findById(blogsID);
 
   try {
-    const blogsID = req.params.id;
-    const blogs = await Blog.findById(blogsID);
+    const { id } = req.params;
+    const blogs = await Blog.findById(id).populate({
+      path: "comments",
+      populate: {
+        path: "User",
+        select: "name email",
+      },
+    });
+    if (!blogs) {
+      return res.status(404).json({
+        message: "ID not found ",
+      });
+    }
     return res.status(200).json({
-      success: "true",
+      success: true,
       message: "fetched successful from DB",
       blogs,
     });
   } catch (error) {
+    console.log("Error in getBlogbyID:", error);
     return res.status(500).json({
       success: false,
-      message: "NOT FOUND BLOG_ID",
+      message: error.message || "NOT FOUND BLOG_ID",
     });
   }
 }
@@ -92,6 +112,7 @@ async function patchBlog(req, res) {
   try {
     const { id } = req.params;
     const { title, description, draft } = req.body;
+
     const updateBlogs = await Blog.findByIdAndUpdate(
       id,
       { title, description, draft },
@@ -103,7 +124,7 @@ async function patchBlog(req, res) {
         message: "Blog ID not Found for A update",
       });
     }
-    return res.status(400).json({
+    return res.status(200).json({
       success: true,
       message: "Update Successfuly",
       updateBlogs,
@@ -114,6 +135,19 @@ async function patchBlog(req, res) {
       message: "Blog Not Found For An Update",
     });
   }
+
+  // try {
+  //   const blogId = req.params;
+  //   const { title, description, draft } = req.body;
+  //   const user = await User.findById(creator).select(-password)
+
+  //   console.log(user);
+  // } catch (error) {
+  //    return res.status(400).json({
+  //     success: false,
+  //      message: "Blog Not Found For An Update",
+  //    });
+  // }
 }
 
 async function deleteBlog(req, res) {
@@ -128,7 +162,7 @@ async function deleteBlog(req, res) {
         message: "For Deleteing Blog, ID not Found",
       });
     }
-    return res.status(400).json({
+    return res.status(200).json({
       success: true,
       message: "Delete Successfuly",
       deleteBlog,
@@ -141,13 +175,49 @@ async function deleteBlog(req, res) {
   }
 }
 
+async function likeblog(req, res) {
+  try {
+    const creator = req.user;
+    const { id } = req.params;
+    const blog = await Blog.findById(id);
+
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found for like and dislike",
+      });
+    }
+    // console.log(blog.likes);f
+    // console.log(blog.likes.includes(creator));
+
+    if (!blog.likes.includes(creator)) {
+      await Blog.findByIdAndUpdate(id, { $push: { likes: creator } });
+      return res.status(200).json({
+        success: true,
+        message: "blogliked Successful",
+      });
+    } else {
+      await Blog.findByIdAndUpdate(id, { $pull: { likes: creator } });
+      return res.status(200).json({
+        success: false,
+        message: "blogunlike Successful",
+      });
+    }
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+}
+
+
 module.exports = {
   createBlog,
   getBlogs,
   getBlogbyID,
   patchBlog,
   deleteBlog,
+  likeblog,
+ 
 };
-
-
-
