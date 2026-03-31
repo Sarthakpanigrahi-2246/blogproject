@@ -4,9 +4,9 @@ import { Navigate } from "react-router-dom";
 
 function CreateBlogs() {
   let user = null;
-  try {
+  try{
     user = JSON.parse(localStorage.getItem("user"));
-  } catch (e) {
+  }catch(e) {
     user = null;
   }
   
