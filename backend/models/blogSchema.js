@@ -22,6 +22,14 @@ const blogSchema = new mongoose.Schema(
       ref: "User",
       required: true, //USER HAI TO BLOG HAI NAHI TO BLOG CREATE HI NAHI HO SAKTA
     },
+      image: {
+      type: String,
+      required: true,
+    },
+    imageId: {
+      type: String,
+      required: true,
+    },
 
     likes: [
       {
@@ -36,7 +44,9 @@ const blogSchema = new mongoose.Schema(
       },
     ],
   },
+ 
   { timestamps: true },
+
 );
 
 const Blog = mongoose.model("Blog", blogSchema);

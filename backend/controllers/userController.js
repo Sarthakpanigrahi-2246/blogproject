@@ -58,7 +58,7 @@ async function userCreate(req, res) {
       user:{
         name: newUser.name,
         email : newUser.email,
-        blogs : newUser.blogs,
+        // blogs : newUser.blogs,
       },
           token
       
@@ -114,7 +114,11 @@ async function login(req, res) {
     return res.status(200).json({
       success: true,
       message: "Login Successfully",
-       user:checkForexistingUser,
+       user:{
+        name: checkForexistingUser.name,
+        email: checkForexistingUser.email,
+        id: checkForexistingUser._id
+      },
        token
     });
   } catch (error) {

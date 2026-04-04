@@ -7,9 +7,9 @@ const route = express.Router();
 
 // route.post("/users",empty);
 // create user and check for existing user.
-route.post("/users", userCreate);
+route.post("/signup", userCreate);
 
-route.post("/login",login)
+route.post("/signin",login)
 
 route.get("/users", getAllUser);
 

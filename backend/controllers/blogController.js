@@ -1,21 +1,29 @@
 const Blog = require("../models/blogSchema");
-const User = require("../models/userSchema"); //Because we need the User model to interact with the users collection.
+const User = require("../models/userSchema"); 
+const fs = require("fs")//Because we need the User model to interact with the users collection.
 const Comment = require("../models/commentSchema");
 const { verifyJWT } = require("../utils/generateToken");
+const {uploadImage, deleteImageFromCloudinary} = require("../utils/uploadimage")
+
+
 
 async function createBlog(req, res) {
   try {
-     const creator = req.user;
+    const creator = req.user;
     // console.log("Creator ID from middleware/ Names:", creator);
 
     const { title, description, draft } = req.body; //// DESTRUCTURING
-    console.log( title, description, draft)
     const image = req.file;
+    
     if (!title) {
       return res.status(400).json({ message: "Please provide title" });
     }
     if (!description) {
       return res.status(400).json({ message: "Please provide description" });
+    }
+    
+    if (!image) {
+      return res.status(400).json({ message: "Please optional provide image" }); // or handle it depending on if image is required
     }
 
     const findUser = await User.findById(creator); //in blogschema we used increator  creator:==type : mongoose.Schema.Types.ObjectId,
@@ -24,13 +32,18 @@ async function createBlog(req, res) {
     if (!findUser) {
       return res.status(404).json({ message: "User not found" });
     }
+
+    //cloudinary
+    const {secure_url, public_id}= await uploadImage(image.path);
+    fs.unlinkSync(image.path)////jab meri file upload hojaye to automatic delete kardena server se
     //// creating NEW BLOGS
     const creatingBlog = await Blog.create({
       title,
       description,
       draft,
       creator,
-      image
+      image : secure_url ,
+      imageId : public_id // save cloudinary url string
     });
     await User.findByIdAndUpdate(creator, {
       $push: { blogs: creatingBlog._id },
@@ -41,12 +54,15 @@ async function createBlog(req, res) {
       message: "Blog created successfully",
       blog: creatingBlog,
     });
+
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Server error while creating blog",
-    });
-  }
+  console.error("REAL ERROR:", error); // 👈 add this
+
+  return res.status(500).json({
+    success: false,
+    message: error.message,
+  });
+}
 }
 
 async function getBlogs(req, res) {
@@ -162,6 +178,9 @@ async function deleteBlog(req, res) {
         message: "For Deleteing Blog, ID not Found",
       });
     }
+     
+    await deleteImageFromCloudinary(deleteBlog.imageId)
+    
     return res.status(200).json({
       success: true,
       message: "Delete Successfuly",
@@ -211,7 +230,6 @@ async function likeblog(req, res) {
   }
 }
 
-
 module.exports = {
   createBlog,
   getBlogs,
@@ -219,5 +237,4 @@ module.exports = {
   patchBlog,
   deleteBlog,
   likeblog,
- 
 };
