@@ -29,8 +29,15 @@ const blogSchema = new mongoose.Schema(
     imageId: {
       type: String,
       required: true,
+      
     },
 
+    // ye unique dene ke liye use kigaya hai jese {69d00630af1222cfdb368e15:: ye-hai-mera-blog}   :http://localhost:5173/blogpage/69d00630af1222cfdb368e15
+    blogId:{
+      type: String,
+      required: true,
+      unique:true
+    },
     likes: [
       {
         type: mongoose.Schema.Types.ObjectId,

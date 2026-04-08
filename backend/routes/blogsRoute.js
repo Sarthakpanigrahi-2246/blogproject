@@ -26,9 +26,9 @@ route.post("/blogs", verifyuser, upload.single("image"), createBlog); // upload.
 
 route.get("/blogs", getBlogs);
 
-route.get("/blogs/:id", getBlogbyID);
+route.get("/blogs/:blogId", getBlogbyID);
 
-route.patch("/blogs/:id", verifyuser, patchBlog);
+route.patch("/blogs/:id", verifyuser, upload.single("image"), patchBlog);
 
 route.delete("/blogs/:id", verifyuser, deleteBlog);
 

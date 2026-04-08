@@ -1,33 +1,28 @@
 const jwt = require("jsonwebtoken");
 
+const dotenv = require("dotenv").config();
+// console.log(process.env.JWT_SECRET)
 async function generateJWT(payload) {
-  const token = await jwt.sign(payload,"thisIsMySecretKeyForJWTGenerationAndVerificationInNodeJS",
-  );
+  const token = await jwt.sign(payload, process.env.JWT_SECRET);
   return token;
 }
 
 function verifyJWT(token) {
   try {
-    const decoded = jwt.verify(
-      token,
-      "thisIsMySecretKeyForJWTGenerationAndVerificationInNodeJS",
-    );
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     return decoded;
-  }
-  catch (error) {
+  } catch (error) {
+    console.log("JWT verification error:", error.message);
     return false;
   }
 }
 
-
-async function decodedJWT(token){
+async function decodedJWT(token) {
   let decoded = await jwt.decode(token);
   return decoded;
 }
 
 module.exports = { generateJWT, verifyJWT, decodedJWT };
-
-
 
 // const jwt = require("jsonwebtoken");
 
@@ -52,7 +47,5 @@ module.exports = { generateJWT, verifyJWT, decodedJWT };
 //     return false;
 //    }
 // }
-
-
 
 // module.exports = { generateJWT, verifyJWT };

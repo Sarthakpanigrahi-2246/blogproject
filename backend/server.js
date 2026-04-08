@@ -1,13 +1,20 @@
 const express = require("express");
-// const mongoose = require("mongoose");
 const dbConnect = require("./configs/dbConnect");
 const blogsRoute = require("./routes/blogsRoute")
 const userRoute = require("./routes/userRoute");
+ 
 
 const app = express();
 const cors = require("cors");
 const cloudinaryCongig = require("./configs/cloudinaryconfig");
 
+const dotenv = require("dotenv");
+dotenv.config()
+const PORT = process.env.PORT
+
+
+// console.log("PORT is the legend :", process.env)
+// console.log("PORT is :", process.env.PORT) //its give 3000
 app.use(express.json());
 app.use(cors());
 
@@ -24,7 +31,7 @@ async function startServer() {
   try {
     await dbConnect();
     await cloudinaryCongig();
-    app.listen(3000, () => {
+    app.listen(PORT, () => {
       console.log("Server Started on port 3000");
     });
   } catch (error) {

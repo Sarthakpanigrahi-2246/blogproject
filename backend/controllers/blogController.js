@@ -3,8 +3,8 @@ const User = require("../models/userSchema");
 const fs = require("fs")//Because we need the User model to interact with the users collection.
 const Comment = require("../models/commentSchema");
 const { verifyJWT } = require("../utils/generateToken");
+const uniqid= require("uniqid")////npm i uniqid
 const {uploadImage, deleteImageFromCloudinary} = require("../utils/uploadimage")
-
 
 
 async function createBlog(req, res) {
@@ -36,15 +36,25 @@ async function createBlog(req, res) {
     //cloudinary
     const {secure_url, public_id}= await uploadImage(image.path);
     fs.unlinkSync(image.path)////jab meri file upload hojaye to automatic delete kardena server se
-    //// creating NEW BLOGS
+
+    ////title ko small letter me convert karke letter ke bichme "-" add karga
+    //const blogId = title.toLowerCase().replace(/ +/g, '-')
+    const blogId = title.toLowerCase().split(" ").join("-") + uniqid()////ye bhi same kaam karega title ke bichme "-" add karga
+    console.log("Uniq id and blog ID",blogId + uniqid())
+    // console.log(uniqid())
+
+    //creating NEW BLOGS
     const creatingBlog = await Blog.create({
       title,
       description,
       draft,
       creator,
       image : secure_url ,
-      imageId : public_id // save cloudinary url string
+      imageId : public_id, // save cloudinary url string
+      blogId
     });
+
+    //push in DB
     await User.findByIdAndUpdate(creator, {
       $push: { blogs: creatingBlog._id },
     });
@@ -97,14 +107,19 @@ async function getBlogbyID(req, res) {
   // const blogs = await Blog.findById(blogsID);
 
   try {
-    const { id } = req.params;
-    const blogs = await Blog.findById(id).populate({
+    const { blogId} = req.params;
+    const blogs = await Blog.findOne({blogId}).populate({  ////why findbyid to findOne 👉 Tu "this-is-ultra-edge" bhej raha hai (slug) //👉 But backend me findById() use kar raha hai
       path: "comments",
       populate: {
-        path: "User",
+        path: "creator",
         select: "name email",
       },
+    })
+    .populate({
+      path: "creator",
+      select: "name email",
     });
+
     if (!blogs) {
       return res.status(404).json({
         message: "ID not found ",

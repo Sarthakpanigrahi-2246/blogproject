@@ -1,3 +1,4 @@
+// This is the Addblog component that allows users to create a new blog post. 
 import React from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -25,20 +26,23 @@ function Addblog() {
 
   async function handlePostBlog(e) {
     try {
+      // Create FormData to send image file properly
+      const formData = new FormData();
+      formData.append("title", blogdata.title);
+      formData.append("description", blogdata.description);
+      formData.append("image", blogdata.image);
+
       const response = await axios.post(
         "http://localhost:3000/api/v1/blogs/",
-        blogdata,
+        formData,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
+            // Don't set Content-Type, axios will set it automatically with boundary
           },
         },
       );
 
-      //console.log(URL.createObjectURL(blogdata.image))
-      //URL.createObjectURL(blogdata.image) ////create a url of blog image 
-      // console.log("responce is :",response)
       toast.success(response.data.message);
       navigate("/");
     } catch (error) {
@@ -52,12 +56,12 @@ function Addblog() {
       }
     }
   }
-//w-[500px] =w-125
+  //w-[500px] =w-125
   //allways use () for readability terneri operator
   return token == null ? (
     <Navigate to={"/signin"} />
   ) : (
-    <div className="w-125">
+    <div className="w-125 m-5 p-5 border-2 border-gray-300 rounded-lg">
       <label htmlFor="">Title</label>
       <input
         type="text"
@@ -83,16 +87,25 @@ function Addblog() {
       />
       <br />
 
-      <div className="">
-        <label htmlFor="image" className="justify-center items-center flex cursor-pointer">
-            {
-              blogdata.image? (<img src={URL.createObjectURL(blogdata.image)}  className="aspect-video object-cover" alt="" />) :( <div className="aspect-video bg-blue-900"></div> )
-            }
-         
+      <div className="flex flex-col gap-3">
+        <label
+          htmlFor="image"
+          className=" "
+        >
+          {blogdata.image ? (
+            <img
+              src={URL.createObjectURL(blogdata.image)}
+              className="aspect-video object-cover"
+              alt=""
+            />
+          ) : (
+            <div className="aspect-video flex justify-center text-4xl items-center bg-zinc-400 ">Select Image</div>
+          )}
+          
         </label>
         <input
-        id="image"
-        className="hidden"
+          id="image"
+          className="hidden"
           type="file"
           placeholder="image"
           accept=".png , .jpeg , .jpg"

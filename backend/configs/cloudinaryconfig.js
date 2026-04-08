@@ -1,11 +1,11 @@
 const cloudinary = require("cloudinary").v2;
-
+require("dotenv").config()
 async function cloudinaryCongig() {
   try {
         await cloudinary.config({
-            cloud_name: "dn8pogdma",
-            api_key: "935521833584247",
-             api_secret: "9cEapTeX5ALSGbCBnbycBY8aFx8",
+             cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+             api_key:process.env.CLOUDINARY_API_KEY,
+              api_secret:process.env.CLOUDINARY_API_SECRET
     });
     console.log("cloudinary configured successfully")
   } catch (error) {
