@@ -12,6 +12,3 @@ async function dbConnect() {
 }
 
 module.exports = dbConnect;
-
-//await mongoose.connect("mongodb+srv://sarthakpanigrahi2218:sarthakpanigrahi2218@cluster0.yipjj14.mongodb.net/BlogDatabase")
-//pass-----sarthakpanigrahi2218
